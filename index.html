@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#efe6d2" />
+<title>千里江山 · 合卷</title>
+<link rel="stylesheet" href="shell/shell.css" />
+</head>
+<body data-view="cover">
+
+<!-- 封面 -->
+<section id="cover" aria-label="千里江山 · 合卷">
+  <div class="cover-art" aria-hidden="true">
+    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f2e8d3"/><stop offset=".55" stop-color="#eadfc7"/><stop offset="1" stop-color="#e3d6bb"/>
+        </linearGradient>
+        <linearGradient id="far" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#8fa89a" stop-opacity=".55"/><stop offset="1" stop-color="#8fa89a" stop-opacity=".05"/>
+        </linearGradient>
+        <linearGradient id="mid" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#4f7a6b" stop-opacity=".78"/><stop offset="1" stop-color="#4f7a6b" stop-opacity=".14"/>
+        </linearGradient>
+        <linearGradient id="near" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#2c4a3f" stop-opacity=".92"/><stop offset="1" stop-color="#2c4a3f" stop-opacity=".34"/>
+        </linearGradient>
+        <radialGradient id="sun" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stop-color="#c4553f" stop-opacity=".5"/><stop offset="1" stop-color="#c4553f" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="1600" height="900" fill="url(#sky)"/>
+      <circle cx="1180" cy="250" r="150" fill="url(#sun)"/>
+      <circle cx="1180" cy="250" r="58" fill="#b9503c" opacity=".55"/>
+      <path d="M0 560 C 140 500 250 512 380 470 C 520 425 600 470 700 452 C 820 430 900 470 1010 452 C 1140 430 1240 470 1360 448 C 1460 430 1540 448 1600 436 L1600 900 L0 900 Z" fill="url(#far)"/>
+      <path d="M0 660 C 120 610 210 620 330 570 C 430 528 500 566 590 590 C 690 616 760 560 860 552 C 980 542 1040 596 1140 606 C 1250 618 1330 566 1430 560 C 1510 556 1560 574 1600 580 L1600 900 L0 900 Z" fill="url(#mid)"/>
+      <path d="M0 760 C 150 720 240 742 360 706 C 470 674 540 716 640 730 C 760 748 850 700 950 706 C 1070 714 1150 762 1260 762 C 1380 762 1470 722 1600 730 L1600 900 L0 900 Z" fill="url(#near)"/>
+      <g fill="none" stroke="#3d5a4d" stroke-opacity=".35" stroke-width="1.2">
+        <path d="M300 590 C 340 566 372 580 406 566"/><path d="M980 600 C 1012 584 1044 592 1076 580"/>
+      </g>
+      <g fill="#3d5a4d" opacity=".5">
+        <path d="M560 330 l8 -10 l8 10 l-6 0 l0 10 l-4 0 l0 -10 z"/>
+        <path d="M600 316 l7 -9 l7 9 l-5 0 l0 9 l-4 0 l0 -9 z"/>
+        <path d="M950 350 l6 -8 l6 8 l-4 0 l0 8 l-3 0 l0 -8 z"/>
+      </g>
+    </svg>
+    <div class="cover-grain"></div>
+  </div>
+
+  <div class="cover-inner">
+    <div class="cover-head">
+      <span class="cover-eyebrow">北宋 · 王希孟　绢本设色</span>
+      <div class="cover-seal">合卷</div>
+    </div>
+
+    <div class="cover-title">
+      <h1><span>千</span><span>里</span><span>江</span><span>山</span></h1>
+      <p class="cover-sub">一 图 两 卷 · 十 五 印</p>
+    </div>
+
+    <div class="cover-chapters">
+      <button class="chapter-card" type="button" data-enter="1">
+        <em>卷一 <i class="card-progress" data-cover-count="1">0 / 8</i></em>
+        <b>人在画中游</b>
+        <span>沿石径缓行，收八方画印，录一段青绿影卷</span>
+        <u>入 卷 →</u>
+      </button>
+      <div class="chapter-arrow" aria-hidden="true">·</div>
+      <button class="chapter-card" type="button" data-enter="2">
+        <em>卷二 <i class="card-progress" data-cover-count="2">0 / 7</i></em>
+        <b>云游青绿</b>
+        <span>泛舟燃灯、抚琴听风，再寻七印，合为一卷</span>
+        <u>入 卷 →</u>
+      </button>
+    </div>
+
+    <div class="cover-actions">
+      <button id="btn-enter" class="btn btn-ink" type="button">
+        <span class="btn-main">入 卷 一</span><span class="btn-sub">人在画中游</span>
+      </button>
+      <button id="btn-enter-2" class="btn btn-ghost btn-strong" type="button">
+        <span class="btn-main">入 卷 二</span><span class="btn-sub">云游青绿</span>
+      </button>
+      <button id="btn-resume" class="btn btn-ghost btn-sm" type="button" hidden>续 卷</button>
+      <button id="btn-help" class="btn btn-ghost btn-sm" type="button">展读说明</button>
+    </div>
+
+    <p class="cover-foot">全程序化生成 · 无外部素材 · 建议佩戴耳机</p>
+  </div>
+</section>
+
+<!-- 游戏舞台 -->
+<div id="stage" aria-hidden="true">
+  <iframe id="frame" title="千里江山" allow="autoplay; fullscreen; pointer-lock" referrerpolicy="no-referrer"></iframe>
+</div>
+
+<!-- 卷扣（右侧） -->
+<button id="clasp" class="clasp" type="button" aria-label="合卷面板" hidden>
+  <span class="clasp-seal">卷</span>
+  <span class="clasp-pips" id="clasp-pips"></span>
+</button>
+
+<!-- 转场 / 载入 -->
+<div id="veil" class="veil" hidden>
+  <div class="veil-paper"></div>
+  <div class="veil-body">
+    <div class="veil-seal" id="veil-seal">壹</div>
+    <p class="veil-kicker" id="veil-kicker">第 一 卷</p>
+    <h2 class="veil-title" id="veil-title">人在画中游</h2>
+    <p class="veil-note" id="veil-note">入画 · 苔径启行</p>
+  </div>
+</div>
+
+<!-- 入云之门 -->
+<div id="gate" class="gate" hidden>
+  <div class="gate-card">
+    <span class="gate-seal">云</span>
+    <div class="gate-copy">
+      <p class="gate-kicker">八印已齐 · 山尽云生</p>
+      <h3>此卷终处，恰是下一眼山水的起点</h3>
+    </div>
+    <div class="gate-actions">
+      <button id="btn-gate-go" class="btn btn-ink btn-sm" type="button">入云 · 第二卷</button>
+      <button id="btn-gate-later" class="btn btn-ghost btn-sm" type="button">再走走</button>
+    </div>
+  </div>
+</div>
+
+<!-- 合卷面板 -->
+<aside id="panel" class="panel" hidden aria-label="合卷">
+  <header class="panel-head">
+    <div>
+      <p class="panel-kicker">合 卷</p>
+      <h2>十五印 · 两卷</h2>
+    </div>
+    <button id="btn-panel-close" class="panel-close" type="button" aria-label="收起">×</button>
+  </header>
+
+  <div class="ledger" id="ledger"></div>
+
+  <div class="panel-rows">
+    <button class="panel-row" data-go="1" type="button">
+      <span class="row-num">壹</span>
+      <span class="row-main"><b>人在画中游</b><i>八印 · 石径、松风、渔舟、长桥、飞瀑、烟村、观山</i></span>
+      <span class="row-count" data-count="1">0 / 8</span>
+    </button>
+    <button class="panel-row" data-go="2" type="button">
+      <span class="row-num">贰</span>
+      <span class="row-main"><b>云游青绿</b><i>七印 · 燃灯、抚琴、登舟、听风、望江台</i></span>
+      <span class="row-count" data-count="2">0 / 7</span>
+    </button>
+  </div>
+
+  <p class="panel-note">卷一收满八印，画面下方会出现「入云」；也可随时在此换卷。</p>
+
+  <footer class="panel-foot">
+    <button id="btn-show-finale" class="btn btn-ink btn-sm" type="button" hidden>终章</button>
+    <button id="btn-cover" class="btn btn-ghost btn-sm" type="button">合上此卷</button>
+    <button id="btn-panel-help" class="btn btn-ghost btn-sm" type="button">展读说明</button>
+  </footer>
+</aside>
+
+<!-- 合卷终章 -->
+<div id="finale" class="finale" hidden>
+  <div class="finale-card">
+    <span class="finale-seal">合</span>
+    <p class="finale-kicker">卷 终 · 山 河 合</p>
+    <h2>十五印，两卷归一</h2>
+    <p class="finale-text">八印留在石径与长桥，七印沉在江心与灯下。<br/>你从画中走到云里，又把云收回了画中。</p>
+    <div class="finale-pips" id="finale-pips"></div>
+    <div class="finale-actions">
+      <button id="btn-finale-again" class="btn btn-ink btn-sm" type="button">再览长卷</button>
+      <button id="btn-finale-close" class="btn btn-ghost btn-sm" type="button">留在云中</button>
+      <button id="btn-finale-cover" class="btn btn-ghost btn-sm" type="button">合卷归架</button>
+    </div>
+  </div>
+</div>
+
+<!-- 说明 -->
+<div id="help" class="help" hidden>
+  <div class="help-card">
+    <button id="btn-help-close" class="panel-close" type="button" aria-label="收起">×</button>
+    <p class="panel-kicker">展 读 说 明</p>
+    <h2>这一卷怎么读</h2>
+    <ol>
+      <li><b>两卷分开进</b>：封面上「入卷一」「入卷二」各走各的，封面两张卷卡也能直接点；先玩哪卷、只玩哪卷都行。</li>
+      <li><b>卷一 · 人在画中游</b>：WASD 行走，Shift 疾行，鼠标转向；走近朱印与景物，读题跋、钤画印。右上「录影」可录第一视角影卷。</li>
+      <li><b>入云</b>：卷一收满八印后，画面下方出现「入云」；也可以点右侧卷扣，在面板里直接换卷。</li>
+      <li><b>卷二 · 云游青绿</b>：同样第一人称，多了泛舟、燃灯、抚琴；七印归一后自动展开全景。</li>
+      <li><b>合卷</b>：两卷十五印齐全，终章自动出现；只玩一卷也能随时停，进度各自记着。</li>
+    </ol>
+    <p class="help-foot">两卷进度各自存在浏览器里，关掉再开可从封面「续卷」接着走。</p>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="shell/shell.js"></script>
+</body>
+</html>
