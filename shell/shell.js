@@ -1,4 +1,4 @@
-/* 千里江山 · 合卷 —— 外壳逻辑
+﻿/* 千里江山 · 合卷 —— 外壳逻辑
    两卷各自是一个独立的实时山水应用，外壳负责：
    封面、卷次、转场、合卷印章账本、入云之门、终章。 */
 (() => {
@@ -37,6 +37,110 @@
     halfWarned: false,
     lock: false,
   };
+
+  /* ---------------- 封面环境声（程序化合成，无音频文件） ---------------- */
+  const Ambient = (() => {
+    const KEY = 'qianli-hejuan-ambient';
+    const BASE = 0.22;
+    let ctx = null, master = null, windGain = null;
+    let muted = false;
+    let timer = null;
+    try { muted = localStorage.getItem(KEY) === 'off'; } catch (e) { /* ignore */ }
+
+    function noise(c) {
+      const len = Math.floor(c.sampleRate * 4);
+      const buf = c.createBuffer(1, len, c.sampleRate);
+      const d = buf.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < len; i++) {
+        last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02;
+        d[i] = last * 3.2;
+      }
+      return buf;
+    }
+
+    function build() {
+      const src = ctx.createBufferSource();
+      src.buffer = noise(ctx);
+      src.loop = true;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 480; bp.Q.value = 0.6;
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1200;
+      windGain = ctx.createGain(); windGain.gain.value = 0.14;
+      src.connect(bp); bp.connect(lp); lp.connect(windGain); windGain.connect(master);
+      src.start();
+
+      [[73.42, 'sine', 0.045], [110, 'triangle', 0.03], [146.83, 'sine', 0.022]].forEach(([f, type, g]) => {
+        const o = ctx.createOscillator(); o.type = type; o.frequency.value = f;
+        o.detune.value = Math.random() * 8 - 4;
+        const og = ctx.createGain(); og.gain.value = g;
+        o.connect(og); og.connect(master); o.start();
+      });
+
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.05;
+      const lg = ctx.createGain(); lg.gain.value = 0.28;
+      lfo.connect(lg); lg.connect(windGain.gain); lfo.start();
+    }
+
+    function pluck() {
+      if (!ctx || muted) return;
+      const notes = [293.66, 349.23, 392.0, 440.0, 523.25, 587.33];
+      const f = notes[Math.floor(Math.random() * notes.length)];
+      const t = ctx.currentTime + 0.02;
+      const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.setValueAtTime(f, t);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.12, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 3.2);
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1800;
+      o.connect(g); g.connect(lp); lp.connect(master);
+      o.start(t); o.stop(t + 3.4);
+    }
+
+    function schedule() {
+      clearTimeout(timer);
+      timer = setTimeout(() => { pluck(); schedule(); }, 5200 + Math.random() * 6500);
+    }
+
+    function fade(v, sec) {
+      if (!ctx) return;
+      const t = ctx.currentTime;
+      master.gain.cancelScheduledValues(t);
+      master.gain.setValueAtTime(master.gain.value, t);
+      master.gain.linearRampToValueAtTime(v, t + sec);
+    }
+
+    async function start() {
+      if (muted) return;
+      if (!ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        ctx = new AC();
+        master = ctx.createGain();
+        master.gain.value = 0;
+        master.connect(ctx.destination);
+        build();
+      }
+      if (ctx.state === 'suspended') await ctx.resume().catch(() => {});
+      fade(BASE, 3);
+      if (!timer) schedule();
+    }
+
+    function duck() { if (ctx) fade(0, 0.9); }
+    function raise() { if (ctx && !muted) fade(BASE, 2.2); }
+    function setMuted(m) {
+      muted = m;
+      try { localStorage.setItem(KEY, m ? 'off' : 'on'); } catch (e) { /* ignore */ }
+      if (m) fade(0, 0.5);
+      else start();
+    }
+
+    return {
+      start, duck, raise, setMuted,
+      isMuted: () => muted,
+      state: () => (ctx ? ctx.state : 'none'),
+      gain: () => (master ? Number(master.gain.value.toFixed(3)) : 0),
+    };
+  })();
 
   /* ---------------- 进度：优先读游戏本体，其次读存档 ---------------- */
   const STORE_A = 'qianli-river-first-person.seals.v1';
@@ -230,6 +334,7 @@
     GATE.hidden = true;
     FINALE.hidden = true;
     clearInterval(injectTimer);
+    Ambient.duck();
 
     const ch = CH[n];
     if (!opts.instant) await showVeil(ch);
@@ -270,6 +375,7 @@
     HELP.hidden = true;
     FRAME.src = 'about:blank';
     refreshCover();
+    Ambient.raise();
   }
 
   /* ---------------- 卷内注入 ---------------- */
@@ -380,6 +486,25 @@
     S.c2 = saved.b;
     paint({ c1: S.c1, c2: S.c2 });
     refreshCover();
+
+    // 封面环境声：第一次交互解锁；右上「声/静」可关
+    const ambBtn = $('#btn-ambient');
+    const paintAmb = () => {
+      const m = Ambient.isMuted();
+      ambBtn.textContent = m ? '静' : '声';
+      ambBtn.classList.toggle('is-off', m);
+      ambBtn.setAttribute('aria-pressed', String(!m));
+    };
+    paintAmb();
+    ambBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      Ambient.setMuted(!Ambient.isMuted());
+      paintAmb();
+    });
+    const unlockAmb = () => { Ambient.start(); };
+    document.addEventListener('pointerdown', unlockAmb, { capture: true });
+    document.addEventListener('keydown', unlockAmb, { capture: true });
+    window.__HEJUAN_AMBIENT__ = Ambient;
 
     $('#btn-enter').addEventListener('click', () => go(1));
     $('#btn-enter-2').addEventListener('click', () => go(2));

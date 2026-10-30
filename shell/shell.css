@@ -32,6 +32,18 @@ button{font-family:inherit;cursor:pointer}
 body:not([data-view="cover"]) #cover{opacity:0;visibility:hidden;pointer-events:none}
 
 .cover-art{position:absolute;inset:0}
+
+.ambient-btn{
+  position:fixed;right:clamp(14px,3vw,28px);top:clamp(14px,3vh,26px);z-index:8;
+  width:44px;height:44px;display:grid;place-items:center;
+  border:1px solid rgba(167,58,46,.55);background:rgba(255,252,244,.6);
+  color:var(--cinnabar);font-family:var(--brush);font-size:19px;border-radius:3px;
+  transition:background .25s,color .25s,border-color .25s,opacity .4s;
+  backdrop-filter:blur(2px);
+}
+.ambient-btn:hover{background:var(--cinnabar);color:#f6ecd8}
+.ambient-btn.is-off{color:var(--ink-faint);border-color:rgba(31,42,37,.3);background:rgba(255,252,244,.35)}
+body[data-view="chapter"] .ambient-btn{opacity:0;pointer-events:none}
 .cover-art svg{width:100%;height:100%;display:block;transform:scale(1.04);animation:drift 28s ease-in-out infinite alternate}
 @keyframes drift{from{transform:scale(1.04) translate3d(0,0,0)}to{transform:scale(1.09) translate3d(-1.2%,-.8%,0)}}
 .cover-grain{
