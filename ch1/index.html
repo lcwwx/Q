@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#e8ddc4" />
+    <meta name="description" content="《千里江山图》第一视角沉浸式数字长卷 —— 可行走、可听风、可钤印、可录制。" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='5' y='5' width='54' height='54' rx='6' fill='%23a73a2e'/%3E%3Cpath d='M13 45l13-23 9 15 7-10 9 18z' fill='%23efe2c6'/%3E%3C/svg%3E" />
+    <title>千里江山 · 人在画中游</title>
+    <script type="module" crossorigin src="assets/index-B3agKjZj.js"></script>
+    <link rel="stylesheet" crossorigin href="assets/index-CfkAw-70.css">
+  </head>
+  <body data-scene="landing">
+    <div id="app">
+      <canvas id="scene-canvas" aria-label="青绿山水第一人称游览画面"></canvas>
+      <div class="scene-vignette" aria-hidden="true"></div>
+
+      <div id="ui" class="ui">
+        <div id="hud" class="hud" aria-hidden="true">
+          <header class="topbar">
+            <div class="identity">
+              <span class="identity__seal">千</span>
+              <div class="identity__text">
+                <span class="identity__title">千里江山</span>
+                <span class="identity__sub">画中游 · 行迹</span>
+              </div>
+            </div>
+            <nav class="topbar__actions" aria-label="游览控制">
+              <div class="mood-switch" role="group" aria-label="天气与时辰">
+                <button type="button" data-mood="clear" class="is-active" aria-pressed="true"><span>晴</span><i>岚</i></button>
+                <button type="button" data-mood="mist" aria-pressed="false"><span>烟</span><i>雨</i></button>
+                <button type="button" data-mood="dusk" aria-pressed="false"><span>暮</span><i>山</i></button>
+              </div>
+              <button id="btn-sound" class="icon-button" type="button" aria-label="开启或关闭声音" title="声音">声</button>
+              <button id="btn-map" class="icon-button" type="button" aria-label="展开行迹图" title="行迹图">图</button>
+              <button id="btn-record" class="record-button" type="button" aria-label="录制游览视频"><span class="record-button__dot"></span><span class="record-button__label">录影</span></button>
+              <button id="btn-help" class="icon-button" type="button" aria-label="查看展读说明" title="展读说明">？</button>
+            </nav>
+          </header>
+
+          <aside class="place-card" id="place-card" aria-live="polite">
+            <div class="place-card__index"><span id="place-num">序</span></div>
+            <div class="place-card__line"></div>
+            <div class="place-card__copy">
+              <h2 id="place-title">入画</h2>
+              <p id="place-sub">苔径启行</p>
+              <span id="place-coords">青绿初醒</span>
+            </div>
+          </aside>
+
+          <div id="hotspot-layer" class="hotspot-layer" aria-label="画中景物"></div>
+          <div id="reticle" class="reticle" aria-hidden="true"><i></i></div>
+
+          <section id="auto-ui" class="auto-ui" aria-hidden="true">
+            <div class="auto-ui__top">
+              <div class="auto-ui__mode">
+                <span class="auto-ui__brush"></span>
+                <span>随卷导览</span>
+                <em id="tour-kicker-top">卷一 · 展卷</em>
+              </div>
+              <div class="auto-ui__buttons">
+                <button id="btn-tour-pause" class="quiet-button" type="button">暂停</button>
+                <button id="btn-tour-exit" class="quiet-button" type="button">自由漫游</button>
+              </div>
+            </div>
+            <div class="tour-caption" id="tour-caption" aria-live="polite">
+              <span id="tour-kicker">入画</span>
+              <h2 id="tour-title">展卷</h2>
+              <p id="tour-text">绢色初开，青绿从雾里醒来。</p>
+            </div>
+            <div class="tour-progress" aria-hidden="true">
+              <div class="tour-progress__track"><span id="tour-progress-fill"></span></div>
+              <div class="tour-progress__ticks">
+                <i>入画</i><i>松风</i><i>渔舟</i><i>长桥</i><i>飞瀑</i><i>烟村</i><i>观山</i>
+              </div>
+            </div>
+          </section>
+
+          <footer class="hud-footer">
+            <div class="hud-footer__left">
+              <button id="seal-progress" class="seal-progress" type="button" aria-label="打开画印图鉴">
+                <span class="seal-progress__mark">印</span>
+                <span class="seal-progress__copy">
+                  <span>画中印</span>
+                  <b id="seal-count">0 / 8</b>
+                </span>
+                <span class="seal-progress__row" id="seal-pips" aria-hidden="true"></span>
+              </button>
+              <div class="control-hint" id="control-hint">
+                <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 行走</span>
+                <span><kbd>Shift</kbd> 疾行</span>
+                <span>鼠标 转向</span>
+                <span><kbd>Esc</kbd> 松手</span>
+              </div>
+            </div>
+            <div class="hud-footer__center">
+              <span class="footer-whisper" id="footer-whisper">点击朱印或画中景物，读一读题跋</span>
+            </div>
+            <button id="map-mini" class="map-mini" type="button" aria-label="展开行迹图">
+              <span class="map-mini__head"><span>行迹图</span><em id="map-explored">已行 0%</em></span>
+              <span class="map-mini__canvas-wrap"><canvas id="minimap" width="280" height="530"></canvas></span>
+              <span class="map-mini__foot"><span>已收画印</span><b id="map-seals">〇 / 八</b><i>展卷</i></span>
+            </button>
+          </footer>
+
+          <div id="mobile-controls" class="mobile-controls" aria-hidden="true">
+            <div id="joystick" class="joystick" aria-label="虚拟摇杆">
+              <span class="joystick__ring"></span>
+              <span class="joystick__cross"></span>
+              <span id="joystick-knob" class="joystick__knob"></span>
+            </div>
+            <button id="btn-mobile-map" class="mobile-round" type="button" aria-label="行迹图">图</button>
+          </div>
+
+          <div id="pointer-hint" class="pointer-hint">点击画面锁定视角<span>·</span>Esc 释放<span>·</span>点击朱印或景物阅读题跋</div>
+          <div id="record-indicator" class="record-indicator" hidden>
+            <span class="record-indicator__dot"></span>
+            <span id="record-time">00:00</span>
+            <span id="record-duration" class="record-indicator__total">/ 01:00</span>
+            <button id="btn-stop-record" type="button">结束录制</button>
+          </div>
+          <div id="countdown" class="countdown" hidden>
+            <span id="countdown-number">三</span>
+            <small>凝神 · 入画</small>
+          </div>
+          <div id="quality-chip" class="quality-chip"></div>
+        </div>
+
+        <section id="landing" class="landing" aria-label="序幕">
+          <div class="landing__wash" aria-hidden="true"></div>
+          <header class="landing__topbar">
+            <span class="landing__eyebrow">程序化山水 · 数字长卷</span>
+            <div class="landing__top-actions">
+              <button id="landing-sound" class="text-button text-button--light" type="button">声 · 开</button>
+              <button id="landing-help" class="text-button text-button--light" type="button">展读说明</button>
+            </div>
+          </header>
+          <div class="landing__content">
+            <div class="landing__meta">
+              <span>北宋 · 王希孟</span>
+              <span class="meta-dot"></span>
+              <span>绢本设色</span>
+              <span class="meta-dot"></span>
+              <span>政和三年</span>
+            </div>
+            <div class="landing__title-row">
+              <h1 class="landing__title" aria-label="千里江山">
+                <span>千</span><span>里</span><span>江</span><span>山</span>
+              </h1>
+              <div class="landing__seal" id="landing-seal-wrap">
+                <span>希孟</span>
+              </div>
+            </div>
+            <p class="landing__subtitle">人 在 画 中 游</p>
+            <p class="landing__lede">
+              十八岁的希孟铺开十一米长绢，以石青石绿写尽江山。今日展卷，山色入眼，水声在耳。你可沿画中石径缓行，收八方画印，也可随卷导览，录一段第一视角的青绿影卷。
+            </p>
+            <div class="landing__actions">
+              <button id="btn-start-free" class="ink-button ink-button--primary" type="button">
+                <span class="ink-button__main">入画漫游</span>
+                <span class="ink-button__sub">WASD 行走 · 鼠标转向 · 点击景物</span>
+                <i class="ink-button__arrow">→</i>
+              </button>
+              <button id="btn-start-auto" class="ink-button" type="button">
+                <span class="ink-button__main">随卷导览</span>
+                <span class="ink-button__sub">两分钟第一视角 · 题跋字幕</span>
+                <i class="ink-button__arrow">→</i>
+              </button>
+            </div>
+            <div class="landing__notes">
+              <span><i class="note-seal">印</i> 寻找并钤下八方画印</span>
+              <span><i class="note-record"></i> 一键录制 30–120 秒影卷</span>
+            </div>
+          </div>
+          <div class="landing__poem" aria-hidden="true">
+            <p>一绢青绿</p>
+            <p>千年未干</p>
+            <p>入画者</p>
+            <p>山水也</p>
+            <span class="landing__poem-seal">游</span>
+          </div>
+          <footer class="landing__footer">
+            <span>鼠标拖拽或指针锁定 · 支持触屏</span>
+            <span>全程程序化生成 · 无外部素材</span>
+            <span>建议佩戴耳机</span>
+          </footer>
+        </section>
+
+        <div id="card-layer" class="overlay card-layer" aria-hidden="true">
+          <div class="overlay__scrim" data-close-card></div>
+          <article class="scroll-card" role="dialog" aria-modal="true" aria-labelledby="card-title">
+            <button class="overlay__close" type="button" data-close-card aria-label="关闭题跋">×</button>
+            <div class="scroll-card__visual">
+              <div class="scroll-card__frame">
+                <img id="card-image" alt="画中景物的局部写照" />
+                <span class="scroll-card__corner scroll-card__corner--tl"></span>
+                <span class="scroll-card__corner scroll-card__corner--br"></span>
+              </div>
+              <div class="scroll-card__visual-foot"><span>局部写照</span><span id="card-visual-index">其一</span></div>
+            </div>
+            <div class="scroll-card__copy">
+              <header class="scroll-card__header">
+                <div class="scroll-card__eyebrow"><span id="card-num">一</span><span id="card-eyebrow">第一卷 · 苔径启行</span></div>
+                <h2 id="card-title">入画</h2>
+                <p id="card-subtitle">石青为骨，山色初醒</p>
+              </header>
+              <blockquote id="card-poem" class="scroll-card__poem"></blockquote>
+              <div id="card-body" class="scroll-card__body"></div>
+              <div class="scroll-card__fact">
+                <span id="card-fact">青绿设色</span>
+                <span id="card-tag">入境</span>
+              </div>
+              <footer class="scroll-card__footer">
+                <button id="card-collect" class="seal-button" type="button">
+                  <img id="card-seal" class="seal-button__image" alt="画印" />
+                  <span class="seal-button__copy"><b>钤印入卷</b><small>收下这枚画中印</small></span>
+                </button>
+                <button class="text-button text-button--ink" type="button" data-close-card>合卷继续</button>
+              </footer>
+            </div>
+            <div id="stamp-effect" class="stamp-effect" aria-hidden="true"></div>
+          </article>
+        </div>
+
+        <div id="map-overlay" class="overlay map-overlay" aria-hidden="true">
+          <div class="overlay__scrim" data-close-overlay="map"></div>
+          <section class="map-panel" role="dialog" aria-modal="true" aria-labelledby="map-title">
+            <button class="overlay__close" type="button" data-close-overlay="map" aria-label="关闭行迹图">×</button>
+            <header class="map-panel__header">
+              <div>
+                <span class="panel-eyebrow">展卷 · 行迹</span>
+                <h2 id="map-title">千里江山行迹图</h2>
+              </div>
+              <div class="map-panel__stat"><b id="map-percent-full">0%</b><span>已行</span></div>
+            </header>
+            <div class="map-panel__body">
+              <div class="map-scroll-wrap">
+                <canvas id="fullmap" width="700" height="1360" aria-label="千里江山游览行迹图"></canvas>
+              </div>
+              <aside class="map-notes">
+                <p class="map-notes__poem">江流天地外<br />山色有无中</p>
+                <div class="map-legend">
+                  <span><i class="legend-line"></i> 已行石径</span>
+                  <span><i class="legend-dot"></i> 画中景物</span>
+                  <span><i class="legend-seal"></i> 已收画印</span>
+                </div>
+                <p id="map-note-text">沿石径自南向北，过松亭、渔舟、长桥、飞瀑、烟村、竹径，终至观山台。每一处都藏着一枚画印。</p>
+                <div class="map-notes__count"><span>已收画印</span><b id="map-seals-full">〇 / 八</b></div>
+                <button id="map-note-close" class="text-button text-button--ink" type="button">合图继续</button>
+              </aside>
+            </div>
+          </section>
+        </div>
+
+        <div id="seal-overlay" class="overlay seal-overlay" aria-hidden="true">
+          <div class="overlay__scrim" data-close-overlay="seal"></div>
+          <section class="album-panel" role="dialog" aria-modal="true" aria-labelledby="album-title">
+            <button class="overlay__close" type="button" data-close-overlay="seal" aria-label="关闭画印图鉴">×</button>
+            <header class="album-panel__header">
+              <div>
+                <span class="panel-eyebrow">石青石绿 · 朱印为记</span>
+                <h2 id="album-title">画中印</h2>
+              </div>
+              <p>寻到画中题石，读完题跋，便可钤下那一枚印。<br />八印集齐，长卷与你便有了彼此的落款。</p>
+            </header>
+            <div id="seal-grid" class="seal-grid"></div>
+            <footer class="album-panel__footer">
+              <blockquote>印者，信也。山水无字，落印便成约。</blockquote>
+              <button class="text-button text-button--ink" type="button" data-close-overlay="seal">合卷继续</button>
+            </footer>
+          </section>
+        </div>
+
+        <div id="help-overlay" class="overlay help-overlay" aria-hidden="true">
+          <div class="overlay__scrim" data-close-overlay="help"></div>
+          <section class="help-panel" role="dialog" aria-modal="true" aria-labelledby="help-title">
+            <button class="overlay__close" type="button" data-close-overlay="help" aria-label="关闭说明">×</button>
+            <header class="help-panel__header">
+              <span class="panel-eyebrow">展读说明 · 画中游</span>
+              <h2 id="help-title">如何游这一卷</h2>
+            </header>
+            <div class="help-panel__columns">
+              <div>
+                <h3>行</h3>
+                <p><b>W A S D</b> 或方向键沿石径行走，<b>Shift</b> 加速。鼠标拖拽可转向；点击画面可锁定指针，<b>Esc</b> 释放。触屏设备使用左下角摇杆，滑动画面转向。</p>
+                <h3>看</h3>
+                <p>画中朱印和景物可以点击。走近朱印、亭台、桥梁、渔舟、瀑布，阅读题跋。读完题跋，点击「钤印入卷」，收集画印。点击近处山体，还会展开一页无字的「青绿山骨」。</p>
+                <h3>游</h3>
+                <p>可选择自动导览，约两分钟。空格暂停 / 继续，Esc 离卷。右上角切换晴岚、烟雨、暮山，光影会缓缓过渡。</p>
+                <h3>录</h3>
+                <p>右上角「录影」可录制 30 / 60 / 90 / 120 秒第一视角影卷，录制时隐藏界面，并在画面中合成题跋、片名与印章。结束后自动下载 WebM；若浏览器拦截，可在结果面板手动保存。</p>
+              </div>
+              <div>
+                <h3>关于原作</h3>
+                <p class="help-quote">《千里江山图》为北宋王希孟所作，绢本设色，纵 51.5 厘米，横 1191.5 厘米，现藏故宫博物院。十八岁的画师以石青、石绿层层罩染，把可行、可望、可游、可居的山水理想铺成一条长卷。</p>
+                <h3>关于这一卷</h3>
+                <p>本作不是原画的数字复制，而是一次程序化再创作。山体、江水、树木、亭台、桥梁、飞鸟、云雾与音声皆由代码实时生成，无外部图片与音频素材。界面文字亦为本次创作的新写题跋。</p>
+                <div class="help-meta">
+                  <span>WebGL2 / Three.js</span><span>程序化生成</span><span>可录制 WebM</span>
+                </div>
+                <p class="help-tip">若画面帧率偏低，系统会自动降低像素比与后处理。小屏设备的云雾、植被和后处理会自动减量。</p>
+                <button id="btn-reset-journey" class="text-button text-button--ink help-reset" type="button">拭去旧印 · 重新游卷</button>
+              </div>
+            </div>
+            <footer class="help-panel__footer">
+              <span>qianli-river-first-person · 人在画中游</span>
+              <span>建议使用最新版 Chrome / Edge</span>
+            </footer>
+          </section>
+        </div>
+
+        <div id="record-overlay" class="overlay record-overlay" aria-hidden="true">
+          <div class="overlay__scrim" data-close-overlay="record"></div>
+          <section class="record-panel" role="dialog" aria-modal="true" aria-labelledby="record-title">
+            <button class="overlay__close" type="button" data-close-overlay="record" aria-label="关闭录制设置">×</button>
+            <header class="record-panel__header">
+              <span class="panel-eyebrow">第一视角 · 影卷</span>
+              <h2 id="record-title">录一段画中游</h2>
+              <p>录影时界面会自动隐去，只留下画中山水。你可在画面里合成片名、景点题跋和一枚朱印。</p>
+            </header>
+            <div class="record-form">
+              <div class="record-field">
+                <span class="record-field__label">影卷内容</span>
+                <div class="choice-row" id="record-mode-choices">
+                  <button type="button" data-record-mode="auto" class="choice is-active"><b>随卷导览</b><small>从头开始的自动巡游</small></button>
+                  <button type="button" data-record-mode="free" class="choice"><b>当前漫游</b><small>从此刻所在之处录起</small></button>
+                </div>
+              </div>
+              <div class="record-field">
+                <span class="record-field__label">时长</span>
+                <div class="choice-row choice-row--duration" id="record-duration-choices">
+                  <button type="button" data-record-duration="30" class="choice choice--small">30 秒</button>
+                  <button type="button" data-record-duration="60" class="choice choice--small is-active">60 秒</button>
+                  <button type="button" data-record-duration="90" class="choice choice--small">90 秒</button>
+                  <button type="button" data-record-duration="120" class="choice choice--small">120 秒</button>
+                </div>
+              </div>
+              <label class="record-audio">
+                <input id="record-audio" type="checkbox" checked />
+                <span class="record-audio__box"></span>
+                <span>收录环境声<small>水声、风声与偶尔的琴音会一起入卷</small></span>
+              </label>
+              <p id="record-support-note" class="record-support-note" hidden></p>
+              <div class="record-panel__actions">
+                <button id="btn-record-start" class="ink-button ink-button--primary" type="button">
+                  <span class="ink-button__main">开始录制</span><span class="ink-button__sub">三秒后入画</span><i class="ink-button__arrow">●</i>
+                </button>
+                <span class="record-panel__tip">提示：录制中可按暂停键或「结束录制」收尾。</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div id="result-overlay" class="overlay result-overlay" aria-hidden="true">
+          <div class="overlay__scrim"></div>
+          <section class="result-panel" role="dialog" aria-modal="true" aria-labelledby="result-title">
+            <header class="result-panel__header">
+              <span class="panel-eyebrow">山水有痕 · 影卷已成</span>
+              <h2 id="result-title">一段青绿，收好了</h2>
+              <p id="result-summary">你的第一视角游览影卷已经生成。</p>
+            </header>
+            <video id="result-video" controls playsinline></video>
+            <div class="result-panel__meta">
+              <span id="result-duration">00:60</span><span id="result-size">0 MB</span><span>WebM · 第一视角</span>
+            </div>
+            <div class="result-panel__actions">
+              <a id="download-video" class="ink-button ink-button--primary" download="qianli-river-first-person.webm">
+                <span class="ink-button__main">保存影卷</span><span class="ink-button__sub">WebM 视频</span><i class="ink-button__arrow">↓</i>
+              </a>
+              <button id="btn-result-close" class="text-button text-button--ink" type="button">回到画中</button>
+            </div>
+          </section>
+        </div>
+
+        <div id="tour-end" class="tour-end" aria-hidden="true">
+          <div class="tour-end__panel">
+            <span class="panel-eyebrow">卷尽 · 山未穷</span>
+            <h2>山还在。</h2>
+            <p>你已随卷行至观山台。此卷终处，恰是下一眼山水的起点。</p>
+            <div>
+              <button id="btn-tour-end-free" class="ink-button ink-button--primary" type="button"><span class="ink-button__main">自由漫游</span><span class="ink-button__sub">留在画中</span></button>
+              <button id="btn-tour-end-replay" class="text-button text-button--ink" type="button">再展一次</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+        <div id="fade" class="fade" aria-hidden="true"></div>
+      </div>
+
+      <section id="loading-screen" class="loading-screen" aria-label="正在加载山水长卷">
+        <div class="loading-screen__wash" aria-hidden="true"></div>
+        <div class="loading-screen__inner">
+          <span class="loading-screen__eyebrow">北宋 · 王希孟</span>
+          <div class="loading-screen__seal">展</div>
+          <h1>正在展卷</h1>
+          <p id="loading-label">研石青，调石绿，铺开十一米绢本</p>
+          <div class="loading-track"><i id="loading-fill"></i></div>
+          <div class="loading-meta"><span id="loading-percent">0%</span><span>全程序化生成 · 无外部素材</span></div>
+          <p class="loading-hint">建议佩戴耳机 · 青绿山水正在醒</p>
+        </div>
+        <div class="loading-screen__footer"><span>千 里 江 山</span><span>人 在 画 中 游</span></div>
+      </section>
+
+      <noscript>
+        <div class="noscript">这一卷需要 JavaScript 与 WebGL。请在浏览器中开启后重试。</div>
+      </noscript>
+    </div>
+
+  </body>
+</html>
